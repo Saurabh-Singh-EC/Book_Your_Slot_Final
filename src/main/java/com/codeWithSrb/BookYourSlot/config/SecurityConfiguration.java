@@ -54,7 +54,11 @@ public class SecurityConfiguration {
         return security.csrf(AbstractHttpConfigurer::disable)
                 .cors(configuration -> configuration.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(configurer -> configurer
-                        .requestMatchers("/api/v1/booking/register", "/api/v1/booking/login", "/api/v1/booking/profile", "/api/v1/booking/refresh/token").permitAll()
+                        .requestMatchers("/api/v1/booking/register",
+                                "/api/v1/booking/login",
+                                "/api/v1/booking/profile",
+                                "/api/v1/booking/refresh/token",
+                                "/api/v1/booking/book").permitAll()
                         .requestMatchers("/api/v1/booking").hasAnyAuthority(RoleType.ROLE_ADMIN.name())
                         .requestMatchers("/api/v1/booking/**").hasAnyAuthority(RoleType.ROLE_ADMIN.name(), RoleType.ROLE_USER.name())
                         .anyRequest()

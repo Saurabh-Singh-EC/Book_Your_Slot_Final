@@ -1,9 +1,9 @@
 package com.codeWithSrb.BookYourSlot.Controller;
 
 import com.codeWithSrb.BookYourSlot.Exception.ApiException;
-import com.codeWithSrb.BookYourSlot.Model.HttpResponse;
-import com.codeWithSrb.BookYourSlot.Model.UserInfo;
-import com.codeWithSrb.BookYourSlot.Model.UserLoginForm;
+import com.codeWithSrb.BookYourSlot.Model.*;
+import com.codeWithSrb.BookYourSlot.Repository.BookingRepository;
+import com.codeWithSrb.BookYourSlot.Service.BookingService;
 import com.codeWithSrb.BookYourSlot.Service.RoleService;
 import com.codeWithSrb.BookYourSlot.Service.UserDetailsServiceImpl;
 import com.codeWithSrb.BookYourSlot.config.UserDetailsImpl;
@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,8 @@ public class Controller {
     HttpServletRequest request;
     @Autowired
     HttpServletResponse response;
+    @Autowired
+    BookingService bookingService;
 
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> registerNewUser(@RequestBody UserInfo userInfo) {
@@ -159,6 +162,29 @@ public class Controller {
                         .withHttpStatus(NOT_FOUND)
                         .withStatusCode(NOT_FOUND.value())
                         .withReason("There is no mapping for a " + request.getMethod() + " on the server")
+                        .build());
+    }
+
+    @PostMapping("/book")
+    public ResponseEntity<HttpResponse> bookSlot(@RequestBody BookingForm bookingForm) {
+        UserInfo userInfo = userDetailsServiceImpl.findUserByEmail(bookingForm.getEmail());
+        if(ObjectUtils.isEmpty(userInfo)) {
+            return ResponseEntity.badRequest()
+                    .body(HttpResponse.builder()
+                            .withTimeStamp(now().toString())
+                            .withHttpStatus(BAD_REQUEST)
+                            .withStatusCode(BAD_REQUEST.value())
+                            .withMessage("Enter the correct email id for booking.")
+                            .build());
+        }
+
+        bookingService.createNewBooking(bookingForm, userInfo);
+        return ResponseEntity.ok()
+                .body(HttpResponse.builder()
+                        .withTimeStamp(now().toString())
+                        .withHttpStatus(OK)
+                        .withStatusCode(OK.value())
+                        .withMessage("Booking is successful")
                         .build());
     }
 }
