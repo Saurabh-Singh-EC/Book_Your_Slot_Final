@@ -3,6 +3,7 @@ package com.codeWithSrb.BookYourSlot.dtomapper;
 import com.codeWithSrb.BookYourSlot.Model.Role;
 import com.codeWithSrb.BookYourSlot.Model.UserInfo;
 import com.codeWithSrb.BookYourSlot.dto.UserInfoDTO;
+import com.codeWithSrb.BookYourSlot.dto.UserInfoRegisterDTO;
 import org.springframework.beans.BeanUtils;
 
 public class UserDTOMapper {
@@ -21,9 +22,9 @@ public class UserDTOMapper {
         return userInfoDTO;
     }
 
-    public static UserInfo toUserInfo(UserInfoDTO userInfoDTO) {
+    public static UserInfo fromUserInfoRegisterDTO(UserInfoRegisterDTO userInfoRegisterDTO) {
         UserInfo userInfo = new UserInfo();
-        BeanUtils.copyProperties(userInfoDTO, userInfo);
+        BeanUtils.copyProperties(userInfoRegisterDTO, userInfo);
         return userInfo;
     }
 

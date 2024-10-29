@@ -2,9 +2,17 @@ package com.codeWithSrb.BookYourSlot.Model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class BookingForm {
 
     @NotEmpty(message = "Email cannot be empty")
@@ -14,46 +22,4 @@ public class BookingForm {
     private Date date;
     private String startTime;
     private String endTime;
-
-    public BookingForm() {
-    }
-
-    public BookingForm(String email, Date date, String startTime, String endTime) {
-        this.email = email;
-        this.date = date;
-        this.startTime = startTime;
-        this.endTime = endTime;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
 }

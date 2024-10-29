@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root-secret
+      MYSQL_DATABASE: BookYourSlot
+      MYSQL_USER: CodeWithSrb
+      MYSQL_PASSWORD: srb-secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - springboot-mysql-network
+
+volumes:
+  mysql_data:
+
+networks:
+  springboot-mysql-network:
+    driver: bridge

@@ -39,10 +39,10 @@ public class ExceptionUtils {
 
     private static HttpResponse getHttpResponse(HttpServletResponse response, String message, HttpStatus httpStatus) {
         HttpResponse httpResponse = HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withReason(message)
-                .withStatusCode(httpStatus.value())
-                .withHttpStatus(httpStatus)
+                .timeStamp(now().toString())
+                .reason(message)
+                .statusCode(httpStatus.value())
+                .httpStatus(httpStatus)
                 .build();
 
         response.setContentType(APPLICATION_JSON_VALUE);

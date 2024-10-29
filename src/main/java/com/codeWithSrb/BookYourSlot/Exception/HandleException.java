@@ -12,7 +12,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -33,11 +32,11 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     protected ResponseEntity<Object> handleExceptionInternal(Exception exception, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         log.error("handleExceptionInternal: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
-                        .withTimeStamp(now().toString())
-                        .withHttpStatus(HttpStatus.resolve(statusCode.value()))
-                        .withStatusCode(statusCode.value())
-                        .withReason(exception.getMessage())
-                        .withDevelopersMessage(exception.getMessage())
+                        .timeStamp(now().toString())
+                        .httpStatus(HttpStatus.resolve(statusCode.value()))
+                        .statusCode(statusCode.value())
+                        .reason(exception.getMessage())
+                        .developerMessage(exception.getMessage())
                         .build(), statusCode);
     }
 
@@ -48,11 +47,11 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
         String fieldMessage = fieldErrors.stream().map(FieldError::getDefaultMessage).collect(Collectors.joining(", "));
 
         return new ResponseEntity<>(HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withHttpStatus(HttpStatus.resolve(status.value()))
-                .withStatusCode(status.value())
-                .withReason(fieldMessage)
-                .withDevelopersMessage(exception.getMessage())
+                .timeStamp(now().toString())
+                .httpStatus(HttpStatus.resolve(status.value()))
+                .statusCode(status.value())
+                .reason(fieldMessage)
+                .developerMessage(exception.getMessage())
                 .build(), status);
     }
 
@@ -60,11 +59,11 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     public ResponseEntity<Object> sQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException exception) {
         log.error("sQLIntegrityConstraintViolationException: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withHttpStatus(BAD_REQUEST)
-                .withStatusCode(BAD_REQUEST.value())
-                .withReason(exception.getMessage().contains("Duplicate Entry") ? "Information already exists": exception.getMessage())
-                .withDevelopersMessage(exception.getMessage())
+                .timeStamp(now().toString())
+                .httpStatus(BAD_REQUEST)
+                .statusCode(BAD_REQUEST.value())
+                .reason(exception.getMessage().contains("Duplicate Entry") ? "Information already exists": exception.getMessage())
+                .developerMessage(exception.getMessage())
                 .build(), BAD_REQUEST);
     }
 
@@ -72,11 +71,11 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     public ResponseEntity<Object> usernameNotFoundException(UsernameNotFoundException exception) {
         log.error("usernameNotFoundException: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withHttpStatus(NOT_FOUND)
-                .withStatusCode(NOT_FOUND.value())
-                .withReason(exception.getMessage())
-                .withDevelopersMessage(exception.getMessage())
+                .timeStamp(now().toString())
+                .httpStatus(NOT_FOUND)
+                .statusCode(NOT_FOUND.value())
+                .reason(exception.getMessage())
+                .developerMessage(exception.getMessage())
                 .build(), NOT_FOUND);
     }
 
@@ -84,11 +83,11 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     public ResponseEntity<Object> badCredentialsException(BadCredentialsException exception) {
         log.error("badCredentialsException: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withHttpStatus(BAD_REQUEST)
-                .withStatusCode(BAD_REQUEST.value())
-                .withReason("Bad Credential: Incorrect email or password.")
-                .withDevelopersMessage(exception.getMessage())
+                .timeStamp(now().toString())
+                .httpStatus(BAD_REQUEST)
+                .statusCode(BAD_REQUEST.value())
+                .reason("Bad Credential: Incorrect email or password.")
+                .developerMessage(exception.getMessage())
                 .build(), BAD_REQUEST);
     }
 
@@ -96,11 +95,11 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     public ResponseEntity<Object> accessDeniedException(AccessDeniedException exception) {
         log.error("accessDeniedException: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withHttpStatus(FORBIDDEN)
-                .withStatusCode(FORBIDDEN.value())
-                .withReason("Access denied. You dont have access.")
-                .withDevelopersMessage(exception.getMessage())
+                .timeStamp(now().toString())
+                .httpStatus(FORBIDDEN)
+                .statusCode(FORBIDDEN.value())
+                .reason("Access denied. You dont have access.")
+                .developerMessage(exception.getMessage())
                 .build(), FORBIDDEN);
     }
 
@@ -108,11 +107,11 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     public ResponseEntity<Object> exception(Exception exception) {
         log.error("exception: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withHttpStatus(INTERNAL_SERVER_ERROR)
-                .withStatusCode(INTERNAL_SERVER_ERROR.value())
-                .withReason("Something went wrong. Please try again.")
-                .withDevelopersMessage(exception.getMessage())
+                .timeStamp(now().toString())
+                .httpStatus(INTERNAL_SERVER_ERROR)
+                .statusCode(INTERNAL_SERVER_ERROR.value())
+                .reason("Something went wrong. Please try again.")
+                .developerMessage(exception.getMessage())
                 .build(), INTERNAL_SERVER_ERROR);
     }
 }

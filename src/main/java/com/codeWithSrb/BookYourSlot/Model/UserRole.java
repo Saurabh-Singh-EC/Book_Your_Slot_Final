@@ -2,53 +2,31 @@ package com.codeWithSrb.BookYourSlot.Model;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
 @Entity
-@Table(name = "user_role")
+@Table(name = "User_Role")
 public class UserRole {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "fkUserId")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "fk_user_id", unique = true)
     private UserInfo userInfo;
 
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "fkRoleId")
+    @JoinColumn(name = "fk_role_id")
     private Role role;
-
-    public UserRole() {
-    }
 
     public UserRole(UserInfo userInfo, Role role) {
         this.userInfo = userInfo;
-        this.role = role;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public UserInfo getUserInfo() {
-        return userInfo;
-    }
-
-    public void setUserInfo(UserInfo userInfo) {
-        this.userInfo = userInfo;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
         this.role = role;
     }
 }

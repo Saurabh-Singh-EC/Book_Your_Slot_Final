@@ -1,6 +1,6 @@
-package com.codeWithSrb.BookYourSlot.Model;
+package com.codeWithSrb.BookYourSlot.dto;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
@@ -8,21 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "User_Info")
-public class UserInfo {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class UserInfoRegisterDTO {
 
     @NotEmpty(message = "First name cannot be empty")
-    @Column(name = "first_name")
     private String firstName;
 
     @NotEmpty(message = "Last name cannot be empty")
-    @Column(name = "last_name")
     private String lastName;
 
     @Column(unique=true)
@@ -33,16 +26,6 @@ public class UserInfo {
     @NotEmpty(message = "Password cannot be empty")
     private String password;
 
+    @NotEmpty(message = "Address cannot be empty")
     private String address;
-
-    @OneToOne(mappedBy = "userInfo")
-    private UserRole userRole;
-
-    public UserInfo(String firstName, String lastName, String email, String password, String address) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.address = address;
-    }
 }

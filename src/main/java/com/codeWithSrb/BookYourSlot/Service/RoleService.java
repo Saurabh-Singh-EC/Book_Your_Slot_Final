@@ -1,35 +1,42 @@
 package com.codeWithSrb.BookYourSlot.Service;
 
+import com.codeWithSrb.BookYourSlot.Enumeration.RoleName;
+import com.codeWithSrb.BookYourSlot.Enumeration.RolePermission;
 import com.codeWithSrb.BookYourSlot.Exception.ApiException;
 import com.codeWithSrb.BookYourSlot.Model.Role;
 import com.codeWithSrb.BookYourSlot.Repository.RoleRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
 public class RoleService {
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
+    public RoleService(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
 
-    public Role getRoleByUserId(int id) {
-        try {
-            return roleRepository.findRoleByUserId(id);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new ApiException("An error occurred. Please try again");
+    @PostConstruct
+    public void initRoles() {
+        if (roleRepository.findByName(RoleName.ROLE_ADMIN.name()).isEmpty()) {
+            roleRepository.save(new Role(RoleName.ROLE_ADMIN.name(), RolePermission.ADMIN.getPermission()));
+        }
+        if (roleRepository.findByName(RoleName.ROLE_USER.name()).isEmpty()) {
+            roleRepository.save(new Role(RoleName.ROLE_USER.name(), RolePermission.USER.getPermission()));
         }
     }
 
-    public Role getRoleByName(String name) {
-        try {
-            return roleRepository.findByName(name);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new ApiException("An error occurred. Please try again");
-        }
+
+    public Role getRoleByUserId(int id) {
+        return roleRepository.findRoleByUserId(id).orElseThrow(() -> new ApiException("An error occurred while fetching the role by Id. Please try again"));
+    }
+
+    public Optional<Role> getRoleByName(String name) {
+        return roleRepository.findByName(name);
     }
 }

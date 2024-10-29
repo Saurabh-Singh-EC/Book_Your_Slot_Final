@@ -1,10 +1,9 @@
 package com.codeWithSrb.BookYourSlot.config;
 
 
-import com.codeWithSrb.BookYourSlot.Enumeration.RoleType;
+import com.codeWithSrb.BookYourSlot.Enumeration.RolePermission;
 import com.codeWithSrb.BookYourSlot.Service.UserDetailsServiceImpl;
 import com.codeWithSrb.BookYourSlot.filter.CustomizeAuthorizationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,17 +31,20 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    @Autowired
     CustomizeAuthorizationFilter customizeAuthorizationFilter;
-
-    @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
     AccessDeniedHandlerImpl accessDeniedHandler;
-
-    @Autowired
     AuthenticationEntryPointImpl authenticationEntryPoint;
+
+    public SecurityConfiguration(CustomizeAuthorizationFilter customizeAuthorizationFilter,
+                                 PasswordEncoder passwordEncoder,
+                                 AccessDeniedHandlerImpl accessDeniedHandler,
+                                 AuthenticationEntryPointImpl authenticationEntryPoint) {
+        this.customizeAuthorizationFilter = customizeAuthorizationFilter;
+        this.passwordEncoder = passwordEncoder;
+        this.accessDeniedHandler = accessDeniedHandler;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+    }
 
     @Bean
     UserDetailsService userDetailsService() {
@@ -52,15 +54,16 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         return security.csrf(AbstractHttpConfigurer::disable)
-                .cors(configuration -> configuration.configurationSource(corsConfigurationSource()))
+                .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(configurer -> configurer
                         .requestMatchers("/api/v1/booking/register",
                                 "/api/v1/booking/login",
                                 "/api/v1/booking/profile",
                                 "/api/v1/booking/refresh/token",
+                                "/api/v1/booking/*",
                                 "/api/v1/booking/book").permitAll()
-                        .requestMatchers("/api/v1/booking").hasAnyAuthority(RoleType.ROLE_ADMIN.name())
-                        .requestMatchers("/api/v1/booking/**").hasAnyAuthority(RoleType.ROLE_ADMIN.name(), RoleType.ROLE_USER.name())
+                        .requestMatchers("/api/v1/booking").hasAuthority(RolePermission.USER.name())
+                        .requestMatchers("/api/v1/booking/**").hasAnyAuthority(RolePermission.ADMIN.name(), RolePermission.USER.name())
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(customizer -> customizer.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint))
@@ -68,23 +71,6 @@ public class SecurityConfiguration {
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(customizeAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        var corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000", "http://securecapita.org", "http://192.168.1.164", "http://192.168.1.216", "http://100.14.212.97:5000"));
-        //corsConfiguration.setAllowedOrigins(Arrays.asList("*"));
-        corsConfiguration.setAllowedHeaders(Arrays.asList("Origin", "Access-Control-Allow-Origin", "Content-Type",
-                "Accept", "Jwt-Token", "Authorization", "Origin", "Accept", "X-Requested-With",
-                "Access-Control-Request-Method", "Access-Control-Request-Headers"));
-        corsConfiguration.setExposedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Jwt-Token", "Authorization",
-                "Access-Control-Allow-Origin", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", "File-Name"));
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration);
-        return source;
     }
 
     @Bean

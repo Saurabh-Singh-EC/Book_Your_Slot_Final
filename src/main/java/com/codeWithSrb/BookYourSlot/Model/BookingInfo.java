@@ -4,9 +4,13 @@ package com.codeWithSrb.BookYourSlot.Model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "booking_info")
 public class BookingInfo {
@@ -15,75 +19,27 @@ public class BookingInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotEmpty(message = "EMail id cannot be empty")
+    @NotEmpty(message = "Email id cannot be empty")
     @Email(message = "Invalid email. Please enter a valid email address")
     private String email;
 
     private Date date;
 
+    @Column(name = "start_time")
     private String startTime;
+
+    @Column(name = "end_time")
     private String endTime;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "fkUserId")
+    @JoinColumn(name = "fk_user_id")
     private UserInfo userInfo;
-
-    public BookingInfo() {
-    }
 
     public BookingInfo(String email, Date date, String startTime, String endTime, UserInfo userInfo) {
         this.email = email;
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.userInfo = userInfo;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public UserInfo getUserInfo() {
-        return userInfo;
-    }
-
-    public void setUserInfo(UserInfo userInfo) {
         this.userInfo = userInfo;
     }
 }

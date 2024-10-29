@@ -22,10 +22,10 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         HttpResponse httpResponse = HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withReason("You don't have enough permission.")
-                .withStatusCode(FORBIDDEN.value())
-                .withHttpStatus(FORBIDDEN)
+                .timeStamp(now().toString())
+                .reason("You don't have enough permission.")
+                .statusCode(FORBIDDEN.value())
+                .httpStatus(FORBIDDEN)
                 .build();
 
         response.setContentType(APPLICATION_JSON_VALUE);

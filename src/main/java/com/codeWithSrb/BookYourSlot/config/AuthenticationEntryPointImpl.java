@@ -23,10 +23,10 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
 
         HttpResponse httpResponse = HttpResponse.builder()
-                .withTimeStamp(now().toString())
-                .withReason("Please login to access this resource.")
-                .withStatusCode(UNAUTHORIZED.value())
-                .withHttpStatus(UNAUTHORIZED)
+                .timeStamp(now().toString())
+                .reason("Please login to access this resource.")
+                .statusCode(UNAUTHORIZED.value())
+                .httpStatus(UNAUTHORIZED)
                 .build();
 
         response.setContentType(APPLICATION_JSON_VALUE);

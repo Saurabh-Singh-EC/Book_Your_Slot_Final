@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.codeWithSrb.BookYourSlot.Service.UserDetailsServiceImpl;
+import com.codeWithSrb.BookYourSlot.Service.UserInfoService;
 import com.codeWithSrb.BookYourSlot.config.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -41,8 +42,11 @@ public class TokenProvider {
     @Value("&{jwt.secret}")
     private String secret;
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsServiceImpl;
+    private UserInfoService userInfoService;
+
+    public TokenProvider(UserInfoService userInfoService) {
+        this.userInfoService = userInfoService;
+    }
 
     public String createAccessToken(UserDetailsImpl userDetailsImpl) {
         String[] claims = getClaimsFromUser(userDetailsImpl);
@@ -92,7 +96,7 @@ public class TokenProvider {
     }
 
     public Authentication getAuthentication(String email, List<GrantedAuthority> grantedAuthorities, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken userPasswordAuthToken = new UsernamePasswordAuthenticationToken(userDetailsServiceImpl.findUserByEmail(email), null, grantedAuthorities);
+        UsernamePasswordAuthenticationToken userPasswordAuthToken = new UsernamePasswordAuthenticationToken(userInfoService.findUserByEmail(email), null, grantedAuthorities);
         userPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return userPasswordAuthToken;
     }

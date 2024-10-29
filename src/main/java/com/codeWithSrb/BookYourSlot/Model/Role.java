@@ -1,9 +1,15 @@
 package com.codeWithSrb.BookYourSlot.Model;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+@Data
+@NoArgsConstructor
 @Entity
-@Table(name = "Role")
+@Table(name = "role")
 public class Role {
 
     @Id
@@ -15,36 +21,11 @@ public class Role {
 
     private String permission;
 
-    public Role() {
-    }
+    @OneToMany(mappedBy = "role")
+    private List<UserRole> userRole;
 
-    public Role(int id, String name, String permission) {
-        this.id = id;
+    public Role(String name, String permission) {
         this.name = name;
-        this.permission = permission;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
         this.permission = permission;
     }
 }
