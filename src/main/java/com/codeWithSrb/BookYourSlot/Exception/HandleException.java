@@ -31,6 +31,7 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception exception, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         log.error("handleExceptionInternal: " + exception.getMessage());
+        exception.printStackTrace();
         return new ResponseEntity<>(HttpResponse.builder()
                         .timeStamp(now().toString())
                         .httpStatus(HttpStatus.resolve(statusCode.value()))
@@ -70,6 +71,7 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<Object> usernameNotFoundException(UsernameNotFoundException exception) {
         log.error("usernameNotFoundException: " + exception.getMessage());
+        exception.printStackTrace();
         return new ResponseEntity<>(HttpResponse.builder()
                 .timeStamp(now().toString())
                 .httpStatus(NOT_FOUND)
@@ -105,6 +107,7 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> exception(Exception exception) {
+        exception.printStackTrace();
         log.error("exception: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
                 .timeStamp(now().toString())

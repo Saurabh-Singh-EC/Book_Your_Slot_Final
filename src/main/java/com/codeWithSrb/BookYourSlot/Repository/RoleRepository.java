@@ -11,6 +11,14 @@ public interface RoleRepository extends JpaRepository<Role, Integer> {
 
     Optional<Role> findByName(String name);
 
-    @Query(nativeQuery = true, value = "select r.id, r.name, r.permission from BookYourSlot.role r join BookYourSlot.user_role ur on ur.fk_role_id = r.id join BookYourSlot.user_info ui on ui.id = ur.fk_user_id where ui.id = :id")
-    Optional<Role> findRoleByUserId(@Param("id") int id);
+    @Query(value = "select r.id," +
+            "r.name, r.permission " +
+            "from BookYourSlot.role r " +
+            "join BookYourSlot.user_role ur " +
+            "on ur.fk_role_id = r.id " +
+            "join BookYourSlot.user_info ui " +
+            "on ui.id = ur.fk_user_id " +
+            "where ui.id = :id",
+            nativeQuery = true)
+    Role findRoleByUserId(@Param("id") int id);
 }

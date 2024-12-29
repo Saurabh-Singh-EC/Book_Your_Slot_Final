@@ -2,7 +2,6 @@ package com.codeWithSrb.BookYourSlot.Service;
 
 import com.codeWithSrb.BookYourSlot.Enumeration.RoleName;
 import com.codeWithSrb.BookYourSlot.Enumeration.RolePermission;
-import com.codeWithSrb.BookYourSlot.Exception.ApiException;
 import com.codeWithSrb.BookYourSlot.Model.Role;
 import com.codeWithSrb.BookYourSlot.Repository.RoleRepository;
 import jakarta.annotation.PostConstruct;
@@ -33,7 +32,7 @@ public class RoleService {
 
 
     public Role getRoleByUserId(int id) {
-        return roleRepository.findRoleByUserId(id).orElseThrow(() -> new ApiException("An error occurred while fetching the role by Id. Please try again"));
+        return roleRepository.findRoleByUserId(id);
     }
 
     public Optional<Role> getRoleByName(String name) {

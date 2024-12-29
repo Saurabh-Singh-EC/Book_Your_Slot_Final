@@ -1,0 +1,106 @@
+Spring Security:
+
+1) Basically spring security can be applied into a spring boot app just by including spring security dependency
+into the pom file. Default use name and password can be used for the form login.
+
+2) The client sends a request to the application, and the container creates a FilterChain, which contains the Filter
+instances and Servlet that should process the HttpServletRequest, based on the path of the request URI. In a Spring
+MVC application, the Servlet is an instance of DispatcherServlet. At most, one Servlet can handle a single HttpServletRequest
+and HttpServletResponse.
+
+3) Basically when we send the request to access any end point, request goes through servlet container which creates
+a chain of filter, and we can say it as a filter chain. Each filter can be configured to modify the request/ response, log or do any other required thing with
+request and response. Each filter also expects a reference to filterChain so that once the filter is executed it can call
+to the next filter in chain.
+
+4) Your request will travel through all the filter in the filter chain before it reaches to the servlet which directs the
+request to controller. Any filter can decide to reject the request and return immediately without calling the next filter
+in the filter chain.
+
+5) In the filter chain we also have a filter called DelegatingFilterProxy which acts as a bridge between servlet container lifecycle
+and spring application context. Servlet container allows registering filter instances using its own standards, but it is not aware about
+spring defined beans. DelegatingFilterProxy looks up bean filter from the application context and invokes that filter.
+
+6) Another benefit of DelegatingFilterProxy is that it allows delaying looking up Filter bean instances. This is important because the
+container needs to register the Filter instances before the container can start up. However, Spring typically uses a ContextLoaderListener
+to load the Spring Beans, which is not done until after the Filter instances need to be registered.
+
+7) Spring Security’s Servlet support is contained within FilterChainProxy. FilterChainProxy is a special Filter provided by Spring Security
+that allows delegating to many Filter instances through SecurityFilterChain. Since FilterChainProxy is a Bean, it is typically wrapped in a
+DelegatingFilterProxy.
+
+8) The Security Filters in SecurityFilterChain are typically Beans, but they are registered with FilterChainProxy instead of DelegatingFilterProxy.
+FilterChainProxy provides a number of advantages to registering directly with the Servlet container or DelegatingFilterProxy.
+
+9) Once you have defined the security filter chain, we can define the different filters in there. For example , CSRF, httpBasic and we can
+also define the custom authentication filter.
+
+10) All the filters are executed in the order they appear. We can create a custom authentication filter for validating the LoggedIn user by
+the passed headers to the request.
+
+11) When we create a custom authentication filter, we are making sure that we are adding a check to validate the user by calling
+authentication manager's authenticate method. Once the user is authenticated successfully, we will get the authentication object
+which will contain the userDetails, credentials , authorities and a flag to hold if the user is authenticated or not.
+
+12) If the user is authenticated we will set the authentication object the SecurityContextHolder.
+13) We generate token for the user and return refresh and access token.
+
+
+Below are the steps which is happening in the authentication of the user when authenticationManager calls authenticate method.
+
+****
+
+We first call the authenticate method on the authentication manager
+with UsernamePasswordAuthenticationToken -> authenticationManager.authenticate(Authentication authentication)
+
+ProviderManager provides the implementation for the authenticationManager hence
+authenticate method is called on the providerManager -> providerManager.authenticate(authentication)
+
+provideManager checks for the support of the relevant authentication provider and once the supported
+authentication providers found, it calls the authenticateMethod on the provider -> provider.authenticate(authentication)
+
+as the authenticate method is present in the base class (AbstractUserDetailsAuthenticationProvider)
+of the DaoAuthenticationProvider, it will be called in the above steps.
+
+in the authenticateMethod of the AbstractUserDetailsAuthenticationProvider, we get the username and check first
+if the userName is present in the cache, if the user is null then we call the retrieveUser() method which is implemented
+in the DaoAuthenticationProvider -> retrieveUser(username, (UsernamePasswordAuthenticationToken) authentication);
+
+if the retrieveUser() method we call the loadUserByUsername(username) method
+on the userDetailsService -> this.getUserDetailsService().loadUserByUsername(username);
+
+if in the above steps, username is found then return the userDetails object otherwise
+returns below exception -> InternalAuthenticationServiceException (default) or UsernameNotFoundException (created by you/user)
+
+now control is back to AbstractUserDetailsAuthenticationProvider, it finds the UsernamePasswordAuthenticationToken, then basically
+it returns the BadCredentialException. But if the user was retrieved successfully, it does the preAuthentication checks
+to check if the account is locked, is disabled , is expired. If any of the checks fails it will throw the respective exception.
+
+if the preAuthentication check is successful then AbstractUserDetailsAuthenticationProvider performs additionalAuthenticationChecks
+which is implemented in DaoAuthenticationProvider. Here we check if the credential is not null, and it matches the password
+retrieved in userDetails. If any of these checks fails, it throws BadCredentialException.
+
+at the end we perform postAuthenticationChecks in AbstractUserDetailsAuthenticationProvider where we check if the Credential is
+expired or not, if expired, throws CredentialsExpiredException.
+
+If the cache was not used we put the userDetails in cache and creates the successAuthentication With below parameters and return
+result with authenticated flag true.
+-> createSuccessAuthentication(principalToReturn, authentication, user) {
+        UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(principal,
+                                                                                                        authentication.getCredentials(),
+                                                                                                        this.authoritiesMapper.mapAuthorities(user.getAuthorities()));
+        result.setDetails(authentication.getDetails());
+        return result;
+}
+
+principalToReturn // USerDetails
+user // UserDetails
+
+
+
+
+
+
+
+
+

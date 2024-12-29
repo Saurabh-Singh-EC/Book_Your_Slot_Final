@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
@@ -25,7 +26,10 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return stream(role.getPermission().split(",".trim())).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        List<SimpleGrantedAuthority> authorities = stream(role.getPermission().split(",".trim())).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        authorities.add(new SimpleGrantedAuthority(role.getName()));
+        System.out.println("authorities" + authorities);
+        return authorities;
     }
 
     @Override
@@ -59,7 +63,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public UserInfoDTO getUser() {
-        return UserDTOMapper.fromUserInfo(this.userInfo, role);
+        return UserDTOMapper.fromUserInfo(this.userInfo, this.role);
     }
 
     public UserInfo getUserInfo() {

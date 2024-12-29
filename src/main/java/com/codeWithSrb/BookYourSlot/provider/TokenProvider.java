@@ -3,16 +3,13 @@ package com.codeWithSrb.BookYourSlot.provider;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.InvalidClaimException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.exceptions.*;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.codeWithSrb.BookYourSlot.Service.UserDetailsServiceImpl;
-import com.codeWithSrb.BookYourSlot.Service.UserInfoService;
 import com.codeWithSrb.BookYourSlot.config.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -42,10 +39,10 @@ public class TokenProvider {
     @Value("&{jwt.secret}")
     private String secret;
 
-    private UserInfoService userInfoService;
+    private final UserDetailsServiceImpl userDetailsService;
 
-    public TokenProvider(UserInfoService userInfoService) {
-        this.userInfoService = userInfoService;
+    public TokenProvider(UserDetailsServiceImpl userDetailsService) {
+        this.userDetailsService = userDetailsService;
     }
 
     public String createAccessToken(UserDetailsImpl userDetailsImpl) {
@@ -76,6 +73,7 @@ public class TokenProvider {
 
     public List<GrantedAuthority> getGrantedAuthorities(String token) {
         String[] claims = getClaimsFromToken(token);
+        stream(claims).forEach(System.out::println);
         return stream(claims).map(SimpleGrantedAuthority::new).collect(toList());
     }
 
@@ -83,44 +81,53 @@ public class TokenProvider {
         JWTVerifier verifier = getJwtVerifier();
         return verifier.verify(token).getClaim(AUTHORITIES).asArray(String.class);
     }
-
-    private JWTVerifier getJwtVerifier() {
-        JWTVerifier jwtVerifier;
-        try {
-            Algorithm algorithm = HMAC512(secret);
-            jwtVerifier = JWT.require(algorithm).withIssuer(CODE_WITH_SRB_LLC).build();
-        } catch (JWTVerificationException e) {
-            throw new JWTVerificationException("Token Can not be verified");
-        }
-        return jwtVerifier;
-    }
-
     public Authentication getAuthentication(String email, List<GrantedAuthority> grantedAuthorities, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken userPasswordAuthToken = new UsernamePasswordAuthenticationToken(userInfoService.findUserByEmail(email), null, grantedAuthorities);
+        UsernamePasswordAuthenticationToken userPasswordAuthToken = new UsernamePasswordAuthenticationToken(userDetailsService.loadUserByUsername(email), null, grantedAuthorities);
         userPasswordAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return userPasswordAuthToken;
     }
 
-    public boolean isTokenValid(String email, String token) {
-        return StringUtils.isNotEmpty(email) && !isTokenExpired(token);
+    public boolean isSubjectAndTokenValid(String email, String token,  HttpServletRequest request) {
+        return StringUtils.isNotEmpty(email) && !isTokenExpired(token, request);
     }
 
-    private boolean isTokenExpired(String token) {
-        Date expiresAt = getJwtVerifier().verify(token).getExpiresAt();
-        return expiresAt.before(new Date());
+    private boolean isTokenExpired(String token, HttpServletRequest request) {
+        return verifyToken(token, request).getExpiresAt().before(new Date());
     }
 
     public String getSubject(String token, HttpServletRequest request) {
+        return verifyToken(token, request).getSubject();
+    }
+
+    private DecodedJWT verifyToken(String token, HttpServletRequest request) {
         try {
-            return getJwtVerifier().verify(token).getSubject();
+            return getJwtVerifier().verify(token);
+        }  catch (IllegalArgumentException exception) {
+            request.setAttribute("invalidArgument", exception.getMessage());
+            throw exception;
+        } catch (JWTDecodeException exception) {
+            request.setAttribute("invalidJwt", exception.getMessage());
+            throw exception;
+        } catch (SignatureVerificationException exception) {
+            request.setAttribute("invalidSignature", exception.getMessage());
+            throw exception;
+        }  catch (AlgorithmMismatchException exception) {
+            request.setAttribute("algorithmMismatch", exception.getMessage());
+            throw exception;
         } catch (TokenExpiredException exception) {
-            request.setAttribute("expiredMessage", exception.getMessage());
+            request.setAttribute("tokenExpired", exception.getMessage());
             throw exception;
         } catch (InvalidClaimException exception) {
             request.setAttribute("invalidClaim", exception.getMessage());
             throw exception;
-        } catch (Exception exception) {
+        } catch(JWTVerificationException exception) {
+            request.setAttribute("jwtVerification", exception.getMessage());
             throw exception;
         }
+    }
+
+    private JWTVerifier getJwtVerifier() {
+        Algorithm algorithm = HMAC512(secret);
+        return JWT.require(algorithm).withIssuer(CODE_WITH_SRB_LLC).build();
     }
 }

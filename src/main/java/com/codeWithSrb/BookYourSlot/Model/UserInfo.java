@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "User_Info")
+@Table(name = "user_info")
 public class UserInfo {
 
     @Id

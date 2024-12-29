@@ -2,14 +2,13 @@ package com.codeWithSrb.BookYourSlot.Model;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "User_Role")
+@Table(name = "user_role")
 public class UserRole {
 
     @Id
@@ -21,7 +20,7 @@ public class UserRole {
     private UserInfo userInfo;
 
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "fk_role_id")
     private Role role;
 

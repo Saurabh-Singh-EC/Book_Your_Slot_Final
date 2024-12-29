@@ -1,6 +1,5 @@
 package com.codeWithSrb.BookYourSlot.Service;
 
-import com.codeWithSrb.BookYourSlot.Model.UserInfo;
 import com.codeWithSrb.BookYourSlot.config.UserDetailsImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,27 +11,18 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private RoleService roleService;
-    private UserInfoService userInfoService;
+    private final RoleService roleService;
+    private final UserInfoService userInfoService;
 
     public UserDetailsServiceImpl(RoleService roleService, UserInfoService userInfoService) {
         this.roleService = roleService;
         this.userInfoService = userInfoService;
     }
 
-    public UserDetailsServiceImpl() {
-    }
-
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserInfo userInfo = userInfoService.findUserByEmail(email);
-
-        if(userInfo == null) {
-            log.error("User not found in the database");
-            throw new UsernameNotFoundException("User not found in the database");
-        } else {
-            log.info("User found in the database {}", email);
-            return new UserDetailsImpl(userInfo, roleService.getRoleByUserId(userInfo.getId()));
-        }
+        return userInfoService.findUserByEmail(email)
+                .map(user -> new UserDetailsImpl(user, roleService.getRoleByUserId(user.getId())))
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("User with name : %s does not exist", email)));
     }
 }

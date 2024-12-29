@@ -1,7 +1,6 @@
 package com.codeWithSrb.BookYourSlot.config;
 
 
-import com.codeWithSrb.BookYourSlot.Enumeration.RolePermission;
 import com.codeWithSrb.BookYourSlot.Service.UserDetailsServiceImpl;
 import com.codeWithSrb.BookYourSlot.filter.CustomizeAuthorizationFilter;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +9,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,36 +17,31 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfiguration {
 
-    CustomizeAuthorizationFilter customizeAuthorizationFilter;
-    PasswordEncoder passwordEncoder;
-    AccessDeniedHandlerImpl accessDeniedHandler;
-    AuthenticationEntryPointImpl authenticationEntryPoint;
+    private final CustomizeAuthorizationFilter customizeAuthorizationFilter;
+    private final PasswordEncoder passwordEncoder;
+    private final AccessDeniedHandlerImpl accessDeniedHandler;
+    private final AuthenticationEntryPointImpl authenticationEntryPoint;
+    private final UserDetailsServiceImpl userDetailsService;
 
     public SecurityConfiguration(CustomizeAuthorizationFilter customizeAuthorizationFilter,
                                  PasswordEncoder passwordEncoder,
                                  AccessDeniedHandlerImpl accessDeniedHandler,
-                                 AuthenticationEntryPointImpl authenticationEntryPoint) {
+                                 AuthenticationEntryPointImpl authenticationEntryPoint, UserDetailsServiceImpl userDetailsService) {
         this.customizeAuthorizationFilter = customizeAuthorizationFilter;
         this.passwordEncoder = passwordEncoder;
         this.accessDeniedHandler = accessDeniedHandler;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
     UserDetailsService userDetailsService() {
-        return new UserDetailsServiceImpl();
+        return userDetailsService;
     }
 
     @Bean
@@ -56,20 +49,25 @@ public class SecurityConfiguration {
         return security.csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(configurer -> configurer
-                        .requestMatchers("/api/v1/booking/register",
-                                "/api/v1/booking/login",
-                                "/api/v1/booking/profile",
-                                "/api/v1/booking/refresh/token",
-                                "/api/v1/booking/*",
-                                "/api/v1/booking/book").permitAll()
-                        .requestMatchers("/api/v1/booking").hasAuthority(RolePermission.USER.name())
-                        .requestMatchers("/api/v1/booking/**").hasAnyAuthority(RolePermission.ADMIN.name(), RolePermission.USER.name())
+                        .requestMatchers("/api/v1/booking/register").permitAll()
+                        .requestMatchers("/api/v1/booking/login").permitAll()
+                        .requestMatchers("/api/v1/booking/password-reset").permitAll()
+                        .requestMatchers("/api/v1/booking/verify/password/**").permitAll()
+                        .requestMatchers("api/v1/booking/password-reset/key").permitAll()
+
+                        .requestMatchers("/api/v1/booking/profile").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/v1/booking/profile").hasAnyAuthority("USER:READ","ADMIN:READ")
+
+                        .requestMatchers("/api/v1/booking/profile/delete/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/v1/booking/profile/delete/**").hasAnyAuthority("USER:DELETE","ADMIN:DELETE")
+
                         .anyRequest()
                         .authenticated())
+
                 .exceptionHandling(customizer -> customizer.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(customizeAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationProvider(authenticationProvider())
                 .build();
     }
 
@@ -85,5 +83,4 @@ public class SecurityConfiguration {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
 }

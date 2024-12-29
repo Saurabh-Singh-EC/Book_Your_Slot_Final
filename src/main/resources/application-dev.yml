@@ -1,5 +1,9 @@
 jwt:
-  secret: thisismysuoercomplexcodewithsrbsecret
+  secret:
+
+logging:
+  level:
+    org.springframework.security: TRACE
 
 server:
   error:
@@ -10,8 +14,8 @@ server:
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/BookYourSlot
-    username: CodeWithSrb
-    password: srb-secret
+    username:
+    password:
   jpa:
     hibernate:
       ddl-auto: update

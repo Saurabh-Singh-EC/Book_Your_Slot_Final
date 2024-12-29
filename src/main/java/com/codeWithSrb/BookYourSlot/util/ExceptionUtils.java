@@ -1,15 +1,13 @@
 package com.codeWithSrb.BookYourSlot.util;
 
-import com.auth0.jwt.exceptions.InvalidClaimException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
-import com.codeWithSrb.BookYourSlot.Exception.ApiException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.codeWithSrb.BookYourSlot.Model.HttpResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 
 import java.io.OutputStream;
 
@@ -25,15 +23,15 @@ public class ExceptionUtils {
 
     public static void processError(HttpServletRequest request, HttpServletResponse response, Exception exception) {
         HttpResponse httpResponse;
-        if(exception instanceof ApiException
-                || exception instanceof InvalidClaimException
-                || exception instanceof TokenExpiredException
-                || exception instanceof BadCredentialsException) {
+        if(exception instanceof IllegalArgumentException
+                || exception instanceof JWTVerificationException
+                || exception instanceof AuthenticationException) {
             httpResponse = getHttpResponse(response, exception.getMessage(), BAD_REQUEST);
         } else {
             httpResponse = getHttpResponse(response, CUSTOM_ERROR_MESSAGE, INTERNAL_SERVER_ERROR);
         }
         writeResponse(response, httpResponse);
+        exception.printStackTrace();
         log.error(exception.getMessage());
     }
 

@@ -1,8 +1,8 @@
 package com.codeWithSrb.BookYourSlot.Enumeration;
 
 public enum RolePermission {
-    USER("READ"),
-    ADMIN("READ, WRITE");
+    USER("USER:READ,USER:WRITE,USER:DELETE,USER:CREATE"),
+    ADMIN("ADMIN:READ,ADMIN:WRITE,ADMIN:DELETE,ADMIN:CREATE");
 
     private String permission;
 

@@ -16,4 +16,8 @@ public class UserRoleService {
     public UserRole saveNewUserRole(UserRole userRole) {
         return userRoleRepository.save(userRole);
     }
+
+    public void deleteUserRoleById(String id) {
+        userRoleRepository.deleteById(id);
+    }
 }
