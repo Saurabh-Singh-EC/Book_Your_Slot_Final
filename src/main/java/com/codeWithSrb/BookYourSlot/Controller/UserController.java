@@ -1,12 +1,14 @@
 package com.codeWithSrb.BookYourSlot.Controller;
 
-import com.codeWithSrb.BookYourSlot.Exception.ApiException;
-import com.codeWithSrb.BookYourSlot.Model.*;
+import com.codeWithSrb.BookYourSlot.Model.HttpResponse;
+import com.codeWithSrb.BookYourSlot.dto.ResetNotLoggedInUserPasswordDTO;
+import com.codeWithSrb.BookYourSlot.Model.UserInfo;
+import com.codeWithSrb.BookYourSlot.Model.UserLoginForm;
 import com.codeWithSrb.BookYourSlot.Service.AuthenticatorImpl;
-import com.codeWithSrb.BookYourSlot.Service.BookingService;
 import com.codeWithSrb.BookYourSlot.Service.UserInfoService;
 import com.codeWithSrb.BookYourSlot.config.UserDetailsImpl;
-import com.codeWithSrb.BookYourSlot.dto.ResetPasswordDTO;
+import com.codeWithSrb.BookYourSlot.dto.ResetLoggedInUserPasswordRequestDTO;
+import com.codeWithSrb.BookYourSlot.dto.ResetPasswordRequestDTO;
 import com.codeWithSrb.BookYourSlot.dto.UserInfoDTO;
 import com.codeWithSrb.BookYourSlot.dto.UserInfoRegisterDTO;
 import com.codeWithSrb.BookYourSlot.dtomapper.UserDTOMapper;
@@ -14,7 +16,6 @@ import com.codeWithSrb.BookYourSlot.provider.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -29,21 +30,20 @@ import static org.springframework.http.HttpStatus.*;
 @RestController
 @RequestMapping("/api/v1/booking")
 @Slf4j
-public class Controller {
+public class UserController {
 
     private final TokenProvider tokenProvider;
-    private final BookingService bookingService;
     private final UserInfoService userInfoService;
     private final AuthenticatorImpl authenticatorImpl;
 
     private static final String RESET_PASSWORD_MESSAGE = "If the email provided is linked to an account, you'll receive a password reset link shortly. Please check your inbox and spam folder.";
+    private static final String RENEW_USER_PASSWORD_MESSAGE = "Password change successfully. Please use new password to login.";
 
-    public Controller(TokenProvider tokenProvider,
-                      BookingService bookingService,
-                      UserInfoService userInfoService,
-                      AuthenticatorImpl authenticatorImpl) {
+
+    public UserController(TokenProvider tokenProvider,
+                          UserInfoService userInfoService,
+                          AuthenticatorImpl authenticatorImpl) {
         this.tokenProvider = tokenProvider;
-        this.bookingService = bookingService;
         this.userInfoService = userInfoService;
         this.authenticatorImpl = authenticatorImpl;
     }
@@ -81,7 +81,7 @@ public class Controller {
                         .build());
     }
 
-    @GetMapping("/profile")
+    @GetMapping("/user/profile")
     public ResponseEntity<HttpResponse> profile(Authentication authentication) {
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl)authentication.getPrincipal();
         UserInfoDTO userInfoDTO = fromUserInfo(userDetailsImpl.getUserInfo(), userDetailsImpl.getRole());
@@ -96,11 +96,30 @@ public class Controller {
                         .build());
     }
 
+    //Start - Reset password when user is logged in
+
+    @PostMapping("/user/reset-password")
+    public ResponseEntity<HttpResponse> resetLoggedInUserPassword(@RequestBody @Valid ResetLoggedInUserPasswordRequestDTO resetLoggedInUserPasswordRequestDTO, Authentication authentication) {
+
+        UserDetailsImpl userDetailsImpl = (UserDetailsImpl)authentication.getPrincipal();
+        userInfoService.renewLoggedInUserPassword(resetLoggedInUserPasswordRequestDTO, userDetailsImpl.getUserInfo());
+
+        return ResponseEntity.ok()
+                .body(HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .httpStatus(OK)
+                        .statusCode(OK.value())
+                        .message(RENEW_USER_PASSWORD_MESSAGE)
+                        .build());
+    }
+
+    //End - Reset password when user is logged in
+
     //Start - Reset password when user is not logged in
 
     @PostMapping("/reset-password")
-    public ResponseEntity<HttpResponse> resetPassword(@RequestBody @Valid ResetPasswordDTO resetPasswordDTO) {
-        Optional<UserInfo> userInfoOptional = userInfoService.findUserByEmail(resetPasswordDTO.getEmail());
+    public ResponseEntity<HttpResponse> resetNotLoggedInUserPassword(@RequestBody @Valid ResetPasswordRequestDTO resetPasswordRequestDTO) {
+        Optional<UserInfo> userInfoOptional = userInfoService.findUserByEmail(resetPasswordRequestDTO.getEmail());
 
         userInfoOptional.ifPresent(userInfoService::generateResetPasswordLink);
 
@@ -113,7 +132,7 @@ public class Controller {
                         .build());
     }
 
-    @GetMapping("/verify/password/{key}")
+    @GetMapping("/verify/reset-password/{key}")
     public ResponseEntity<HttpResponse> verifyResetPassword(@PathVariable String key) {
         UserInfo userInfo = userInfoService.verifyPasswordKey(key);
 
@@ -127,16 +146,16 @@ public class Controller {
                         .build());
     }
 
-    @PostMapping("/renew-password/key")
-    public ResponseEntity<HttpResponse> resetNewPassword(@RequestBody PasswordResetRequest passwordResetRequest) {
-        userInfoService.renewPassword(passwordResetRequest);
+    @PostMapping("/reset-password/key")
+    public ResponseEntity<HttpResponse> resetNewPassword(@RequestBody ResetNotLoggedInUserPasswordDTO resetNotLoggedInUserPasswordDTO) {
+        userInfoService.renewNotLoggedInUserPassword(resetNotLoggedInUserPasswordDTO);
 
         return ResponseEntity.ok()
                 .body(HttpResponse.builder()
                         .timeStamp(now().toString())
                         .httpStatus(OK)
                         .statusCode(OK.value())
-                        .message("Your password has been successfully updated. Please log in using your new password.")
+                        .message(RENEW_USER_PASSWORD_MESSAGE)
                         .build());
     }
 
@@ -151,34 +170,5 @@ public class Controller {
                         .statusCode(NOT_FOUND.value())
                         .reason("There is no mapping for a " + request.getMethod() + " on the server")
                         .build());
-    }
-
-    @PostMapping("/book")
-    public ResponseEntity<HttpResponse> bookSlot(@RequestBody BookingForm bookingForm) {
-        UserInfo userInfo = retrieveUserInfo(bookingForm.getEmail());
-        if (ObjectUtils.isEmpty(userInfo)) {
-            return ResponseEntity.badRequest()
-                    .body(HttpResponse.builder()
-                            .timeStamp(now().toString())
-                            .httpStatus(BAD_REQUEST)
-                            .statusCode(BAD_REQUEST.value())
-                            .message("Enter the correct email id for booking.")
-                            .build());
-        }
-
-        bookingService.createNewBooking(bookingForm, userInfo);
-        return ResponseEntity.ok()
-                .body(HttpResponse.builder()
-                        .timeStamp(now().toString())
-                        .httpStatus(OK)
-                        .statusCode(OK.value())
-                        .message("Booking is successful")
-                        .build());
-    }
-
-    private UserInfo retrieveUserInfo(String email) {
-        Optional<UserInfo> userInfo = userInfoService.findUserByEmail(email);
-
-        return userInfo.orElseThrow(() -> new ApiException(String.format("User with name: %s does not exist", email)));
     }
 }

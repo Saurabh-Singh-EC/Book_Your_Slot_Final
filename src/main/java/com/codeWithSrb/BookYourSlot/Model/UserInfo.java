@@ -3,9 +3,10 @@ package com.codeWithSrb.BookYourSlot.Model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -37,6 +38,9 @@ public class UserInfo {
 
     @OneToOne(mappedBy = "userInfo")
     private UserRole userRole;
+
+    @OneToMany(mappedBy = "userInfo")
+    private List<BookingInfo> bookingInfos;
 
     public UserInfo(String firstName, String lastName, String email, String password, String address) {
         this.firstName = firstName;

@@ -61,6 +61,15 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/booking/profile/delete/**").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/api/v1/booking/profile/delete/**").hasAnyAuthority("USER:DELETE","ADMIN:DELETE")
 
+                        .requestMatchers("/api/v1/booking/user/reset-password").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/v1/booking/user/reset-password").hasAnyAuthority("USER:WRITE","ADMIN:WRITE")
+
+                        .requestMatchers("/api/v1/booking/slots/**").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/v1/booking/slots/**").hasAnyAuthority("USER:READ","ADMIN:READ")
+
+                        .requestMatchers("/api/v1/booking/book").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/api/v1/booking/book").hasAnyAuthority("USER:CREATE","ADMIN:CREATE")
+
                         .anyRequest()
                         .authenticated())
 

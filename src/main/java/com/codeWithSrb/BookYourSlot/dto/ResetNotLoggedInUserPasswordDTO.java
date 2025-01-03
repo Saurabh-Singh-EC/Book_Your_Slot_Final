@@ -1,9 +1,9 @@
-package com.codeWithSrb.BookYourSlot.Model;
+package com.codeWithSrb.BookYourSlot.dto;
 
 import lombok.Data;
 
 @Data
-public class PasswordResetRequest {
+public class ResetNotLoggedInUserPasswordDTO {
 
     private String key;
     private String newPassword;

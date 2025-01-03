@@ -105,9 +105,20 @@ public class HandleException extends ResponseEntityExceptionHandler implements E
                 .build(), FORBIDDEN);
     }
 
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Object> apiException(ApiException exception) {
+        log.error("apiException: " + exception.getMessage());
+        return new ResponseEntity<>(HttpResponse.builder()
+                .timeStamp(now().toString())
+                .httpStatus(INTERNAL_SERVER_ERROR)
+                .statusCode(INTERNAL_SERVER_ERROR.value())
+                .reason("Something went wrong. Please try again.")
+                .developerMessage(exception.getMessage())
+                .build(), INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> exception(Exception exception) {
-        exception.printStackTrace();
         log.error("exception: " + exception.getMessage());
         return new ResponseEntity<>(HttpResponse.builder()
                 .timeStamp(now().toString())

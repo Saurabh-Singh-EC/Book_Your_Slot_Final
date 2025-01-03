@@ -2,12 +2,11 @@ package com.codeWithSrb.BookYourSlot.Model;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
@@ -19,27 +18,18 @@ public class BookingInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotEmpty(message = "Email id cannot be empty")
-    @Email(message = "Invalid email. Please enter a valid email address")
-    private String email;
-
-    private Date date;
+    private LocalDate date;
 
     @Column(name = "start_time")
-    private String startTime;
+    private LocalTime startTime;
 
-    @Column(name = "end_time")
-    private String endTime;
-
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "fk_user_id")
     private UserInfo userInfo;
 
-    public BookingInfo(String email, Date date, String startTime, String endTime, UserInfo userInfo) {
-        this.email = email;
+    public BookingInfo(LocalDate date, LocalTime startTime, UserInfo userInfo) {
         this.date = date;
         this.startTime = startTime;
-        this.endTime = endTime;
         this.userInfo = userInfo;
     }
 }
