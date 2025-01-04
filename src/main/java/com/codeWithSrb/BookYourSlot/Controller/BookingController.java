@@ -7,6 +7,7 @@ import com.codeWithSrb.BookYourSlot.Model.UserInfo;
 import com.codeWithSrb.BookYourSlot.Service.BookingService;
 import com.codeWithSrb.BookYourSlot.config.UserDetailsImpl;
 import com.codeWithSrb.BookYourSlot.dto.BookingInfoRequestDTO;
+import com.codeWithSrb.BookYourSlot.dto.CancelBookingInfoRequestDTO;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,7 @@ public class BookingController {
     }
 
     @PostMapping("/book")
-    public ResponseEntity<HttpResponse> bookSlot(@RequestBody @Valid BookingInfoRequestDTO bookingInfoRequestDTO, Authentication authentication) {
+    public ResponseEntity<HttpResponse> createBooking(@RequestBody @Valid BookingInfoRequestDTO bookingInfoRequestDTO, Authentication authentication) {
 
         UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
         UserInfo userInfo = userDetailsImpl.getUserInfo();
@@ -64,6 +65,20 @@ public class BookingController {
                         .statusCode(CREATED.value())
                         .message("Booking Confirmed")
                         .data(Map.of("BookingInformation", fromBookingInfo(bookingInfo, userInfo)))
+                        .build());
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<HttpResponse> cancelBooking(@RequestBody @Valid CancelBookingInfoRequestDTO cancelBookingInfoRequestDTO, Authentication authentication) {
+
+        bookingService.cancelBooking(cancelBookingInfoRequestDTO);
+
+        return ResponseEntity.ok()
+                .body(HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .httpStatus(OK)
+                        .statusCode(OK.value())
+                        .message("Booking canceled")
                         .build());
     }
 }

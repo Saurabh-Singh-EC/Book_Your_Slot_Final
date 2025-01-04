@@ -5,6 +5,8 @@ import com.codeWithSrb.BookYourSlot.Model.BookingInfo;
 import com.codeWithSrb.BookYourSlot.Model.UserInfo;
 import com.codeWithSrb.BookYourSlot.Repository.BookingRepository;
 import com.codeWithSrb.BookYourSlot.dto.BookingInfoRequestDTO;
+import com.codeWithSrb.BookYourSlot.dto.CancelBookingInfoRequestDTO;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -51,5 +53,16 @@ public class BookingService {
             throw new ApiException("The selected time slot is already booked. Please choose a different time slot.");
 
         return bookingRepository.save(new BookingInfo(bookingInfoRequestDTO.getDate(), bookingInfoRequestDTO.getStartTime(), userInfo));
+    }
+
+    @Transactional
+    public void cancelBooking(CancelBookingInfoRequestDTO cancelBookingInfoRequestDTO) {
+
+        if (bookingRepository.findBookingInfoByIdDateAndStartTime(cancelBookingInfoRequestDTO.getBookingId(),
+                cancelBookingInfoRequestDTO.getDate(),
+                cancelBookingInfoRequestDTO.getStartTime()) <= 0)
+            throw new ApiException("No booking found for the booking id: " + cancelBookingInfoRequestDTO.getBookingId());
+
+        bookingRepository.deleteBooking(cancelBookingInfoRequestDTO.getBookingId());
     }
 }
