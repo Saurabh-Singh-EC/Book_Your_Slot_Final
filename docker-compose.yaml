@@ -14,11 +14,25 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - springboot-mysql-network
+      - bookyourslot-network
+  app:
+    build: .
+    container_name: bookyourslot-app
+    ports:
+      - "9080:8080"
+    environment:
+      MYSQL_HOST: mysql_db
+      MYSQL_USER: CodeWithSrb
+      MYSQL_PASSWORD: srb-secret
+      MYSQL_PORT: 3306
+    depends_on:
+      - mysql
+    networks:
+      - bookyourslot-network
 
 volumes:
   mysql_data:
 
 networks:
-  springboot-mysql-network:
+  bookyourslot-network:
     driver: bridge

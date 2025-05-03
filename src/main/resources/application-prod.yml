@@ -3,12 +3,20 @@ spring:
     url: jdbc:mysql://produrl:3307/BookYourSlot
     username: root
     password: srb-secret
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
-    generate-ddl: true
+      ddl-auto: validate
+    show-sql: false
   sql:
     init:
       mode: never
       continue-on-error: false
+logging:
+  level:
+    org.springframework.security: ERROR

@@ -1,27 +1,31 @@
 jwt:
   secret:
 
-logging:
-  level:
-    org.springframework.security: TRACE
-
-server:
-  error:
-    path: /api/v1/booking/error
-    whitelabel:
-      enabled: false
-
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/BookYourSlot
     username:
     password:
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
     generate-ddl: true
   sql:
     init:
-      mode: never
+      mode: always
       continue-on-error: false
+
+logging:
+  level:
+    org.springframework.security: DEBUG

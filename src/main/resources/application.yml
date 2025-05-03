@@ -1,7 +1,11 @@
 spring:
+  application:
+    name: BookYourSlot
   profiles:
     active: @spring.profiles.active@
 
-application:
-  title: BookYourSlot
-  version: 1.0
+server:
+  error:
+    path: api/v1/booking/error
+    whitelabel:
+      enabled: false
