@@ -21,7 +21,6 @@ public class ResetPasswordService {
         this.resetPasswordRepository = resetPasswordRepository;
     }
 
-    @Transactional
     public void deleteExistingResetPasswordLink(String email) {
         resetPasswordRepository.deleteResetPasswordByEmail(email);
     }

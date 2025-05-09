@@ -6,9 +6,10 @@ import com.codeWithSrb.bookyourslot.model.UserInfo;
 import com.codeWithSrb.bookyourslot.repository.BookingRepository;
 import com.codeWithSrb.bookyourslot.dto.BookingInfoRequestDTO;
 import com.codeWithSrb.bookyourslot.dto.CancelBookingInfoRequestDTO;
-import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -26,7 +27,7 @@ public class BookingService {
         this.bookingRepository = bookingRepository;
     }
 
-    @Transactional
+    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
     public List<LocalTime> findAllAvailableSlots(LocalDate localDate) {
         List<LocalTime> allSlots = generateSlots();
 
@@ -59,7 +60,7 @@ public class BookingService {
         }
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void cancelBooking(CancelBookingInfoRequestDTO cancelBookingInfoRequestDTO) {
 
         BookingInfo bookingInfo = bookingRepository
@@ -68,11 +69,12 @@ public class BookingService {
                         cancelBookingInfoRequestDTO.getDate(),
                         cancelBookingInfoRequestDTO.getStartTime()
                 )
-                .orElseThrow(() -> new ApiException("Something went wrong. Please try again."));
+                .orElseThrow(() -> new ApiException("The booking was already canceled or does not exist."));
 
         bookingRepository.delete(bookingInfo);
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
     public List<BookingInfo> getUsersBooking(UserInfo userInfo) {
         return bookingRepository.getBookingInfoById(userInfo.getId());
     }

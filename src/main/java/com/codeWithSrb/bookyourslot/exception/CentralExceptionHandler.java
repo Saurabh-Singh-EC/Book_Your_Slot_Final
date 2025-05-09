@@ -3,6 +3,7 @@ package com.codeWithSrb.bookyourslot.exception;
 import com.codeWithSrb.bookyourslot.model.HttpResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -103,6 +104,17 @@ public class CentralExceptionHandler extends ResponseEntityExceptionHandler impl
                 .reason("Access denied. You dont have access.")
                 .developerMessage(exception.getMessage())
                 .build(), FORBIDDEN);
+    }
+
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<HttpResponse> handleLockTimeout(PessimisticLockingFailureException ex) {
+        return new ResponseEntity<>(HttpResponse.builder()
+                .timeStamp(now().toString())
+                .httpStatus(CONFLICT)
+                .statusCode(CONFLICT.value())
+                .reason("The booking is being processed by another user. Please try again.")
+                .developerMessage(ex.getMessage())
+                .build(), CONFLICT);
     }
 
     @ExceptionHandler(ApiException.class)

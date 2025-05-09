@@ -10,10 +10,10 @@ import com.codeWithSrb.bookyourslot.dto.ResetLoggedInUserPasswordRequestDTO;
 import com.codeWithSrb.bookyourslot.dto.ResetNotLoggedInUserPasswordDTO;
 import com.codeWithSrb.bookyourslot.dto.UserInfoDTO;
 import com.codeWithSrb.bookyourslot.dto.UserInfoRegisterDTO;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -90,6 +90,7 @@ public class UserInfoService {
         return userRepository.findUserInfoByEmail(email);
     }
 
+    @Transactional
     public void generateResetPasswordLink(UserInfo userInfo) {
 
         resetPasswordService.deleteExistingResetPasswordLink(userInfo.getEmail());
@@ -103,6 +104,7 @@ public class UserInfoService {
         resetPasswordService.saveNewResetPasswordLink(resetPassword);
     }
 
+    @Transactional
     public void renewNotLoggedInUserPassword(ResetNotLoggedInUserPasswordDTO resetNotLoggedInUserPasswordDTO) {
         validateNewPassword(resetNotLoggedInUserPasswordDTO.getNewPassword(), resetNotLoggedInUserPasswordDTO.getConfirmNewPassword());
 
@@ -115,6 +117,7 @@ public class UserInfoService {
         resetPasswordService.deleteExistingResetPasswordLink(userInfo.getEmail());
     }
 
+    @Transactional
     public UserInfo verifyPasswordKey(String key) {
         if(isLinkExpired(key)) throw new ApiException(PASSWORD_RESET_LINK_EXPIRED_MESSAGE);
         Optional<ResetPassword> resetPasswordInfoOptional = resetPasswordService.getUserInfoByResetPasswordUrl(key);
